@@ -1,11 +1,17 @@
 using Itenium.Json.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 
 namespace Itenium.Json.NewtonsoftJson;
 
 public class NewtonsoftJsonTests
 {
+    //JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+    //{
+    //    Formatting = Formatting.Indented,
+    //};
+
     [Fact]
     public void Serialize()
     {
@@ -90,18 +96,5 @@ public class NewtonsoftJsonTests
                             """;
         var obj = JsonConvert.DeserializeObject<Person>(json)!;
         Assert.Equal("Bert", obj.Name);
-    }
-
-    [Fact]
-    public void DefaultSettings()
-    {
-        JsonConvert.DefaultSettings = () => new JsonSerializerSettings
-        {
-            Formatting = Formatting.Indented,
-            ContractResolver = new CamelCasePropertyNamesContractResolver(),
-            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-            NullValueHandling = NullValueHandling.Ignore,
-            DateTimeZoneHandling = DateTimeZoneHandling.Utc
-        };
     }
 }

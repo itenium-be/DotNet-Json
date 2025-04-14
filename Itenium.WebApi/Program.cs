@@ -1,5 +1,6 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -18,6 +19,8 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 
     // This is allowed by default in Newtonsoft.Json
     options.JsonSerializerOptions.AllowTrailingCommas = true;
+
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
 
