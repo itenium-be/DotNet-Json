@@ -33,3 +33,36 @@ public class Floats
     public float Float { get; set; }
     public float Float2 { get; set; }
 }
+
+public class Double
+{
+    public double Value { get; set; }
+}
+
+public class Decimal
+{
+    public decimal Value { get; set; }
+}
+
+public class Node
+{
+    public object Next { get; set; }
+}
+
+public class ConstructorClass
+{
+    public string Name { get; set; }
+    public int Value { get; set; }
+
+    public ConstructorClass(string name, int value = 0)
+    {
+        // STJ: RespectRequiredConstructorParameters = true
+        Name = name;
+        Value = value;
+    }
+
+    private ConstructorClass()
+    {
+        // Newtonsoft: ConstructorHandling.AllowNonPublicDefaultConstructor
+    }
+}

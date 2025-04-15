@@ -2,7 +2,8 @@ using Itenium.Json.Models;
 using Itenium.Json.NewtonsoftJson.Converters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Serialization;
+using Decimal = Itenium.Json.Models.Decimal;
+using Double = Itenium.Json.Models.Double;
 
 namespace Itenium.Json.NewtonsoftJson;
 
@@ -82,8 +83,6 @@ public class NewtonsoftSettingsTests
     [Fact]
     public void Serialize_Floats()
     {
-        // This DOES NOT work for doubles!
-
         var obj = new Floats() { Float = float.NaN };
         string json = JsonConvert.SerializeObject(obj);
         Assert.Equal("{\"Float\":\"NaN\",\"Float2\":0.0}", json);
@@ -96,6 +95,10 @@ public class NewtonsoftSettingsTests
         obj = new Floats() { Float = 3.1415f, Float2 = float.NegativeInfinity };
         json = JsonConvert.SerializeObject(obj, sets);
         Assert.Equal("{\"Float\":3.1415,\"Float2\":\"-Infinity\"}", json);
+
+        var dbl = new Double() { Value = double.PositiveInfinity };
+        json = JsonConvert.SerializeObject(dbl, sets);
+        Assert.Equal("{\"Value\":\"Infinity\"}", json);
 
 
         sets = new JsonSerializerSettings()
@@ -127,8 +130,50 @@ public class NewtonsoftSettingsTests
         string json = JsonConvert.SerializeObject(obj, settings);
         Assert.Contains("Z", json);
 
-        var result = JsonConvert.DeserializeObject<DateTimeContainer>(json, settings);
+        var result = JsonConvert.DeserializeObject<DateTimeContainer>(json, settings)!;
         Assert.Equal(DateTimeKind.Utc, result.DateTime.Kind);
+    }
+
+    [Fact]
+    public void SameReferenceHandling_DoNotSerializeTwice()
+    {
+        var obj = new Node();
+        obj.Next = obj;
+
+        var settings = new JsonSerializerSettings
+        {
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+        };
+
+        string json = JsonConvert.SerializeObject(obj, settings);
+        Assert.Equal("{}", json);
+    }
+
+    [Fact]
+    public void MissingMembers_ThrowException()
+    {
+        const string json = "{\"ExtraProperty\":42}";
+        var obj = JsonConvert.DeserializeObject<Node>(json);
+        Assert.NotNull(obj);
+
+        var settings = new JsonSerializerSettings
+        {
+            MissingMemberHandling = MissingMemberHandling.Error
+        };
+        Assert.Throws<JsonSerializationException>(() => JsonConvert.DeserializeObject<Node>(json, settings));
+    }
+
+    [Fact]
+    public void AllowPrivateConstructor()
+    {
+        const string json = "{\"Name\":\"Test\"}";
+        var settings = new JsonSerializerSettings
+        {
+            ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor
+        };
+
+        var obj = JsonConvert.DeserializeObject<ConstructorClass>(json, settings)!;
+        Assert.Equal("Test", obj.Name);
     }
 
 
@@ -137,31 +182,27 @@ public class NewtonsoftSettingsTests
     {
         var settings = new JsonSerializerSettings
         {
-            ReferenceLoopHandling = ReferenceLoopHandling.Error,
-            MissingMemberHandling = MissingMemberHandling.Ignore,
-            ObjectCreationHandling = ObjectCreationHandling.Auto,
             PreserveReferencesHandling = PreserveReferencesHandling.None,
-            TypeNameHandling = TypeNameHandling.None,
-            MetadataPropertyHandling = MetadataPropertyHandling.Default,
-            TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
-            ConstructorHandling = ConstructorHandling.Default,
-            ContractResolver = null,
             EqualityComparer = null,
             ReferenceResolverProvider = null,
-            TraceWriter = null,
-            SerializationBinder = null,
-            Error = null,
-            Context = default,
-            MaxDepth = null,
+            ObjectCreationHandling = ObjectCreationHandling.Auto,
 
-            DateFormatString = null,
-            DateFormatHandling = DateFormatHandling.IsoDateFormat,
-            DateTimeZoneHandling = DateTimeZoneHandling.Local,
-            DateParseHandling = DateParseHandling.None,
+            SerializationBinder = null,
+            TypeNameHandling = TypeNameHandling.None,
+            TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
+
+            MetadataPropertyHandling = MetadataPropertyHandling.Default,
+            CheckAdditionalContent = false,
 
             StringEscapeHandling = StringEscapeHandling.Default,
+            ContractResolver = null,
+            
+            TraceWriter = null,
+            Error = null,
+            MaxDepth = null,
+
+            Context = default,
             Culture = null,
-            CheckAdditionalContent = false
         };
     }
 }

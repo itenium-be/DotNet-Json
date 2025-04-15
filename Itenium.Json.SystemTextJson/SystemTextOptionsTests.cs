@@ -7,6 +7,15 @@ namespace Itenium.Json.SystemTextJson;
 public class SystemTextOptionsTests
 {
     [Fact]
+    public void WebDefaults()
+    {
+        var opts = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        Assert.True(opts.PropertyNameCaseInsensitive);
+        Assert.Equal(JsonNamingPolicy.CamelCase, opts.PropertyNamingPolicy);
+        Assert.Equal(JsonNumberHandling.AllowReadingFromString, opts.NumberHandling);
+    }
+
+    [Fact]
     public void Serialize_NullAndDefaultHandling()
     {
         var obj = new NullValues();
@@ -66,8 +75,7 @@ public class SystemTextOptionsTests
     [Fact]
     public void Serialize_FloatsAndDoubles()
     {
-        // This also works for doubles
-
+        // Same as JsonNumberHandling.Strict:
         var obj = new Floats() { Float = float.NaN };
         Assert.Throws<ArgumentException>(() => JsonSerializer.Serialize(obj));
 
@@ -80,6 +88,10 @@ public class SystemTextOptionsTests
         string json = JsonSerializer.Serialize(obj, opts);
         Assert.Equal("{\"Float\":\"3.1415\",\"Float2\":\"-Infinity\"}", json);
 
+        var dbl = new Itenium.Json.Models.Double() { Value = double.PositiveInfinity };
+        json = JsonSerializer.Serialize(dbl, opts);
+        Assert.Equal("{\"Value\":\"Infinity\"}", json);
+
 
         opts = new JsonSerializerOptions()
         {
@@ -90,9 +102,49 @@ public class SystemTextOptionsTests
         Assert.Equal("{\"Float\":3.1415,\"Float2\":\"NaN\"}", json);
     }
 
+    [Fact]
+    public void SameReferenceHandling_DoNotSerializeTwice()
+    {
+        // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/preserve-references
 
+        var obj = new Node();
+        obj.Next = obj;
 
+        var options = new JsonSerializerOptions
+        {
+            ReferenceHandler = ReferenceHandler.IgnoreCycles
+        };
 
+        string json = JsonSerializer.Serialize(obj, options);
+        Assert.Equal("{\"Next\":null}", json);
+    }
+
+    [Fact]
+    public void MissingMembers_ThrowException()
+    {
+        string json = "{\"ExtraProperty\":42}";
+        var obj = JsonSerializer.Deserialize<Node>(json);
+        Assert.NotNull(obj);
+
+        var options = new JsonSerializerOptions
+        {
+            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
+        };
+        Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<Node>(json, options));
+    }
+
+    [Fact]
+    public void UseRequiredConstructorParameters()
+    {
+        const string json = "{\"Name\":\"Test\"}";
+        var options = new JsonSerializerOptions
+        {
+            RespectRequiredConstructorParameters = true
+        };
+
+        var obj = JsonSerializer.Deserialize<ConstructorClass>(json, options)!;
+        Assert.Equal("Test", obj.Name);
+    }
 
     [Fact(Skip = "RemainingOptions")]
     public void Serialize_AllOptions()
@@ -106,17 +158,15 @@ public class SystemTextOptionsTests
             IgnoreReadOnlyFields = false,
             IncludeFields = false,
             RespectNullableAnnotations = false,
-            RespectRequiredConstructorParameters = false,
 
+            PreferredObjectCreationHandling = JsonObjectCreationHandling.Replace,
             TypeInfoResolver = null,
+            UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
+
             AllowOutOfOrderMetadataProperties = false,
             DefaultBufferSize = 0,
             Encoder = null,
-            PreferredObjectCreationHandling = JsonObjectCreationHandling.Replace,
             MaxDepth = 0,
-            UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
-            UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip,
-            ReferenceHandler = null,
         };
     }
 }

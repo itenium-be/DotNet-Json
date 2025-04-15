@@ -95,41 +95,4 @@ public class SystemTextJsonTests
         var obj = JsonSerializer.Deserialize<Person>(json, opts)!;
         Assert.Equal("Bert", obj.Name);
     }
-
-    [Fact]
-    public void Serialize_NullAndDefaultHandling()
-    {
-        var obj = new NullValues();
-        string json = JsonSerializer.Serialize(obj);
-        Assert.Equal("{\"Integer\":0,\"NullableInteger\":null,\"Word\":null,\"NonNullableWord\":null,\"Boolean\":false,\"Enum\":0,\"NullableEnum\":null}", json);
-
-
-        var opts = new JsonSerializerOptions
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault
-        };
-        json = JsonSerializer.Serialize(obj, opts);
-        Assert.Equal("{}", json);
-
-
-        opts = new JsonSerializerOptions
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
-        json = JsonSerializer.Serialize(obj, opts);
-        Assert.Equal("{\"Integer\":0,\"Boolean\":false,\"Enum\":0}", json);
-    }
-
-    [Fact]
-    public void Serialize_EnumAsString()
-    {
-        var opts = new JsonSerializerOptions();
-        opts.Converters.Add(new JsonStringEnumConverter());
-        var obj = new EnumValue()
-        {
-            Enum = State.Closed
-        };
-        string json = JsonSerializer.Serialize(obj, opts);
-        Assert.Equal("{\"Enum\":\"Closed\"}", json);
-    }
 }

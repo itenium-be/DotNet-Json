@@ -1,6 +1,5 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -11,15 +10,13 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 
-    options.JsonSerializerOptions.WriteIndented = true;
+    if (builder.Environment.IsDevelopment())
+        options.JsonSerializerOptions.WriteIndented = true;
 
-    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    // Reduce bytes
+    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault;
 
-    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-
-    // This is allowed by default in Newtonsoft.Json
-    options.JsonSerializerOptions.AllowTrailingCommas = true;
-
+    // Increase bytes & readability ;)
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
@@ -29,18 +26,22 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
 {
     options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
 
-    options.SerializerSettings.Formatting = Formatting.Indented;
+    if (builder.Environment.IsDevelopment())
+        options.SerializerSettings.Formatting = Formatting.Indented;
 
+    // Reduce bytes
     options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
     options.SerializerSettings.DefaultValueHandling = DefaultValueHandling.Ignore;
 
-    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+    // Increase bytes & readability ;)
+    options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+});
 
-    // Other
-    options.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
-    options.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
+
+// System.Text.Json for Minimal APis:
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
     
-    options.SerializerSettings.TypeNameHandling = TypeNameHandling.None;
 });
 
 

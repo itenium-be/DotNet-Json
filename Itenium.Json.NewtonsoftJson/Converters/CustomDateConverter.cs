@@ -6,6 +6,8 @@ public class CustomDateTimeConverter : IsoDateTimeConverter
 {
     public CustomDateTimeConverter()
     {
+        // Just use: JsonSerializerSettings.DateFormatString?
+        // But this can be applied to a single DateTime...
         DateTimeFormat = "yyyy-MM-dd";
     }
 }
