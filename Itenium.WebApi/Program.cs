@@ -38,10 +38,10 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
 });
 
 
-// System.Text.Json for Minimal APis:
+// System.Text.Json for Minimal APis (From .NET Core 7):
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
-    
+    // Defaults to new JsonSerializerOptions(JsonSerializerDefaults.Web);
 });
 
 

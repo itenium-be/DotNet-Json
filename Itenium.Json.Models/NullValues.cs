@@ -28,6 +28,11 @@ public class DateTimeContainer
     public DateTime? NullableDateTime { get; set; }
 }
 
+public class TimeSpanContainer
+{
+    public TimeSpan Value { get; set; }
+}
+
 public class Floats
 {
     public float Float { get; set; }
@@ -44,6 +49,11 @@ public class Decimal
     public decimal Value { get; set; }
 }
 
+public class Money
+{
+    public decimal Value { get; set; }
+}
+
 public class Node
 {
     public object Next { get; set; }
@@ -53,16 +63,19 @@ public class ConstructorClass
 {
     public string Name { get; set; }
     public int Value { get; set; }
+    public string CtorUsed { get; set; }
 
     public ConstructorClass(string name, int value = 0)
     {
         // STJ: RespectRequiredConstructorParameters = true
         Name = name;
         Value = value;
+        CtorUsed = "Parameterized";
     }
 
     private ConstructorClass()
     {
         // Newtonsoft: ConstructorHandling.AllowNonPublicDefaultConstructor
+        CtorUsed = "PrivateDefault";
     }
 }

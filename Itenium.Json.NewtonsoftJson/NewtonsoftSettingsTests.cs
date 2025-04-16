@@ -2,7 +2,6 @@ using Itenium.Json.Models;
 using Itenium.Json.NewtonsoftJson.Converters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Decimal = Itenium.Json.Models.Decimal;
 using Double = Itenium.Json.Models.Double;
 
 namespace Itenium.Json.NewtonsoftJson;
@@ -135,6 +134,21 @@ public class NewtonsoftSettingsTests
     }
 
     [Fact]
+    public void HandleTimeSpan()
+    {
+        var obj = new TimeSpanContainer
+        {
+            Value = TimeSpan.FromSeconds(61)
+        };
+
+        string json = JsonConvert.SerializeObject(obj);
+        Assert.Equal("{\"Value\":\"00:01:01\"}", json);
+
+        var result = JsonConvert.DeserializeObject<TimeSpanContainer>(json)!;
+        Assert.Equal(61, result.Value.TotalSeconds);
+    }
+
+    [Fact]
     public void SameReferenceHandling_DoNotSerializeTwice()
     {
         var obj = new Node();
@@ -167,18 +181,36 @@ public class NewtonsoftSettingsTests
     public void AllowPrivateConstructor()
     {
         const string json = "{\"Name\":\"Test\"}";
+        const string jsonWithoutRequiredCtorParams = "{}";
         var settings = new JsonSerializerSettings
         {
+            // Will try non-public default ctor first
+            // It just alters the order in which ctors are attempted
             ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor
         };
-
         var obj = JsonConvert.DeserializeObject<ConstructorClass>(json, settings)!;
         Assert.Equal("Test", obj.Name);
+        Assert.Equal("PrivateDefault", obj.CtorUsed);
+        obj = JsonConvert.DeserializeObject<ConstructorClass>(jsonWithoutRequiredCtorParams, settings)!;
+        Assert.Null(obj.Name);
+        Assert.Equal("PrivateDefault", obj.CtorUsed);
+
+
+        settings = new JsonSerializerSettings
+        {
+            ConstructorHandling = ConstructorHandling.Default
+        };
+        obj = JsonConvert.DeserializeObject<ConstructorClass>(json, settings)!;
+        Assert.Equal("Test", obj.Name);
+        Assert.Equal("Parameterized", obj.CtorUsed);
+        obj = JsonConvert.DeserializeObject<ConstructorClass>(jsonWithoutRequiredCtorParams, settings)!;
+        Assert.Null(obj.Name);
+        Assert.Equal("Parameterized", obj.CtorUsed);
     }
 
 
     [Fact]
-    public void Serialize_AllSettings()
+    public void Serialize_RemainingOptions()
     {
         var settings = new JsonSerializerSettings
         {

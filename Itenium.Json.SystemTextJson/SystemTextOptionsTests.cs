@@ -103,6 +103,21 @@ public class SystemTextOptionsTests
     }
 
     [Fact]
+    public void HandleTimeSpan()
+    {
+        var obj = new TimeSpanContainer
+        {
+            Value = TimeSpan.FromSeconds(61)
+        };
+
+        string json = JsonSerializer.Serialize(obj);
+        Assert.Equal("{\"Value\":\"00:01:01\"}", json);
+
+        var result = JsonSerializer.Deserialize<TimeSpanContainer>(json)!;
+        Assert.Equal(61, result.Value.TotalSeconds);
+    }
+
+    [Fact]
     public void SameReferenceHandling_DoNotSerializeTwice()
     {
         // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/preserve-references
@@ -134,20 +149,31 @@ public class SystemTextOptionsTests
     }
 
     [Fact]
-    public void UseRequiredConstructorParameters()
+    public void RequiredConstructorParameters()
     {
         const string json = "{\"Name\":\"Test\"}";
+        const string jsonWithoutRequiredCtorParams = "{}";
         var options = new JsonSerializerOptions
+        {
+            RespectRequiredConstructorParameters = false
+        };
+        var obj = JsonSerializer.Deserialize<ConstructorClass>(json, options)!;
+        Assert.Equal("Test", obj.Name);
+        obj = JsonSerializer.Deserialize<ConstructorClass>(jsonWithoutRequiredCtorParams, options)!;
+        Assert.Null(obj.Name);
+
+        options = new JsonSerializerOptions
         {
             RespectRequiredConstructorParameters = true
         };
 
-        var obj = JsonSerializer.Deserialize<ConstructorClass>(json, options)!;
+        obj = JsonSerializer.Deserialize<ConstructorClass>(json, options)!;
         Assert.Equal("Test", obj.Name);
+        Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<ConstructorClass>(jsonWithoutRequiredCtorParams, options));
     }
 
     [Fact(Skip = "RemainingOptions")]
-    public void Serialize_AllOptions()
+    public void Serialize_RemainingOptions()
     {
         var opts = new JsonSerializerOptions
         {
