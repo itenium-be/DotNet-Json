@@ -10,7 +10,7 @@ public class NullValues
 {
     public int Integer { get; set; }
     public int? NullableInteger { get; set; }
-    public string Word { get; set; }
+    public string Word { get; set; } = null!;
     public string? NonNullableWord { get; set; }
     public bool Boolean { get; set; }
     public State Enum { get; set; }
@@ -56,14 +56,14 @@ public class Money
 
 public class Node
 {
-    public object Next { get; set; }
+    public object Next { get; set; } = null!;
 }
 
 public class ConstructorClass
 {
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
     public int Value { get; set; }
-    public string CtorUsed { get; set; }
+    public string CtorUsed { get; set; } = null!;
 
     public ConstructorClass(string name, int value = 0)
     {

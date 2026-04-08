@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="Itenium.Json.Models/Itenium.Json.Models.csproj" />
+  <Project Path="Itenium.Json.NewtonsoftJson/Itenium.Json.NewtonsoftJson.csproj" />
+  <Project Path="Itenium.Json.SystemTextJson/Itenium.Json.SystemTextJson.csproj" />
+  <Project Path="Itenium.WebApi/Itenium.WebApi.csproj" />
+</Solution>
